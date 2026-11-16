@@ -1,0 +1,83 @@
+services:
+  # --- Main Application Service ---
+  aac-it-tools:
+    image: "corentinth/it-tools:2023.5.14-77f2efc"
+    container_name: "aac-it-tools"
+    hostname: "it-tools"
+    restart: "always"
+
+
+    environment:
+      SERVICE_IMAGE_TAG: "2023.5.14-77f2efc"
+      SERVICE_DOMAIN_NAME: "example.com"
+      SERVICE_ICON: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/it-tools.png"
+      SERVICE_RESTART_POLICY: "always"
+      SERVICE_NAME_LOWERCASE: "aac-it-tools"
+      PUID: "1000"
+      SERVICE_NAME: "aac-it-tools"
+      DEFAULT_DOCKER_DIR: "/export/docker"
+      SERVICE_DESCRIPTION: "A collection of useful browser-based developer and network tools. Notify-TEST"
+      SERVICE_HOSTNAME: "it-tools"
+      SERVICE_CATEGORY: "Admin - Tools"
+      TESTVAR: "TEST"
+      PGID: "1000"
+      SERVICE_IMAGE_NAME: "corentinth/it-tools"
+      SERVICE_STAGE: "prod"
+      TZ: "Europe/Berlin"
+
+    ports:
+      - "28587:80/tcp"
+
+    volumes:
+      - "/export/docker/aac-it-tools/data:/data"
+
+    networks:
+      - exposed
+      - interconnect
+      - secured
+      - stack_internal
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.aac-it-tools.rule: "Host(`it-tools.example.com`)"
+      traefik.http.routers.aac-it-tools.entrypoints: "websecure"
+      traefik.http.routers.aac-it-tools.tls: "true"
+      traefik.http.routers.aac-it-tools.tls.certresolver: "ionos"
+      traefik.docker.network: "services-secured"
+      traefik.http.services.aac-it-tools.loadbalancer.server.port: "80"
+      traefik.http.services.aac-it-tools.loadbalancer.server.scheme: "http"
+      auto-dns.createWildcard.aac-it-tools: "true"
+      auto-dns.customDNS.aac-it-tools: "true"
+      auto-dns.customDOMAIN.aac-it-tools: "example.com"
+      auto-dns.customHost.aac-it-tools: "it-tools"
+      homepage.group: "Admin - Tools"
+      homepage.name: "It Tools"
+      homepage.href: "https://it-tools.example.com"
+      homepage.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/it-tools.png"
+      homepage.description: "A collection of useful browser-based developer and network tools. Notify-TEST"
+
+
+    security_opt:
+    - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '10'
+
+
+
+networks:
+  secured:
+    name: "services-secured"
+    external: true
+  exposed:
+    name: "services-exposed"
+    external: true
+  interconnect:
+    name: "docker-default"
+    external: true
+  stack_internal:
+    name: "aac-it-tools_stack_internal"
+    driver: "bridge"
+

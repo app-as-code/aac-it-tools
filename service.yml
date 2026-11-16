@@ -1,0 +1,124 @@
+service:
+  name: aac-it-tools
+  image_repo: corentinth/it-tools
+  image_tag: 2023.5.14-77f2efc
+  description: A collection of useful browser-based developer and network tools. Notify-TEST
+  icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/it-tools.png
+  category: Admin - Tools
+  stage: prod
+  hostname: it-tools
+ports:
+- name: web
+  port: 80
+  protocol: TCP
+  external_port: 28587
+config:
+  domain_name: example.com
+  generate_hostname: false
+  integrations:
+    homepage:
+      enabled: true
+    autodns:
+      enabled: true
+      create_wildcard: true
+    traefik:
+      enabled: true
+      cert_resolver: ionos
+      entrypoint: websecure
+  schema_version: 2
+stage_overrides:
+  prod:
+    service:
+      hostname: it-tools
+    config:
+      generate_hostname: false
+volumes:
+  data:
+    description: Persistent data for IT-Tools
+deployment_strategy:
+  main:
+    enabled: true
+    target_stage: prod
+  dev:
+    enabled: true
+    target_stage: dev
+  test:
+    enabled: false
+    target_stage: test
+  ansible-dev:
+    enabled: true
+    target_stage: dev
+  iac-dev:
+    enabled: true
+    target_stage: dev
+  template-dev:
+    enabled: true
+    target_stage: dev
+deployments:
+  docker_compose:
+    restart_policy: always
+    host_base_path: /export/docker
+    security_opt:
+    - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '10'
+    volumes:
+    - data:/data
+    environment:
+      SERVICE_IMAGE_TAG: '{{ vars.SERVICE_IMAGE_TAG }}'
+      SERVICE_DOMAIN_NAME: '{{ vars.SERVICE_DOMAIN_NAME }}'
+      SERVICE_ICON: '{{ vars.SERVICE_ICON }}'
+      SERVICE_RESTART_POLICY: '{{ vars.SERVICE_RESTART_POLICY }}'
+      SERVICE_NAME_LOWERCASE: '{{ vars.SERVICE_NAME_LOWERCASE }}'
+      PUID: '{{ vars.PUID }}'
+      SERVICE_NAME: '{{ vars.SERVICE_NAME }}'
+      DEFAULT_DOCKER_DIR: '{{ vars.DEFAULT_DOCKER_DIR }}'
+      SERVICE_DESCRIPTION: '{{ vars.SERVICE_DESCRIPTION }}'
+      SERVICE_HOSTNAME: '{{ vars.SERVICE_HOSTNAME }}'
+      SERVICE_CATEGORY: '{{ vars.SERVICE_CATEGORY }}'
+      TESTVAR: '{{ vars.TESTVAR }}'
+      PGID: '{{ vars.PGID }}'
+      SERVICE_IMAGE_NAME: '{{ vars.SERVICE_IMAGE_NAME }}'
+      SERVICE_STAGE: '{{ vars.SERVICE_STAGE }}'
+      TZ: '{{ vars.TZ }}'
+  kubernetes:
+    namespace: tools
+    replicas: 1
+    service_type: ClusterIP
+    ingress:
+      enabled: true
+      class_name: traefik
+      tls_secret_name: it-tools-tls
+    persistent_volume_claims:
+      data:
+        storage_class: ceph-rbd
+        size: 1Gi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+vars:
+  SERVICE_IMAGE_TAG: 2023.5.14-77f2efc
+  SERVICE_DOMAIN_NAME: example.com
+  SERVICE_ICON: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/it-tools.png
+  SERVICE_RESTART_POLICY: always
+  SERVICE_NAME_LOWERCASE: aac-it-tools
+  PUID: '1000'
+  SERVICE_NAME: aac-it-tools
+  DEFAULT_DOCKER_DIR: /export/docker
+  SERVICE_DESCRIPTION: A collection of useful browser-based developer and network
+    tools. Notify-TEST
+  SERVICE_HOSTNAME: it-tools
+  SERVICE_CATEGORY: Admin - Tools
+  TESTVAR: TEST
+  PGID: '1000'
+  SERVICE_IMAGE_NAME: corentinth/it-tools
+  SERVICE_STAGE: prod
+  TZ: Europe/Berlin
+secrets: {}
